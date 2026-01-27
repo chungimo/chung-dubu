@@ -28,4 +28,4 @@ AI tools are extremely valuable for experienced engineers. They’re great for b
 
 You have to be able to clearly articulate what you’re trying to accomplish at a technical level. Without that, the result might look fine on the surface, but it’ll be brittle, insecure, or poorly designed where it matters.
 
-Building a complete product solely with AI, without real engineering oversight, in a production environment is will be either unrealistic or a risk you’re eventually going to pay for.
+Building a complete product solely with AI, without real engineering oversight, in a production environment will be either unrealistic or a risk you’re eventually going to pay for.
