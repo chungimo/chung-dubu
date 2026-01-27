@@ -7,7 +7,6 @@ Optional tool integrations to extend Dubu's capabilities.
 | Integration | Description |
 |-------------|-------------|
 | [local](local/) | Shell aliases for quick navigation (`dubu`, `dubuhome`) |
-| [parallel-search](parallel-search/) | Web search and URL fetching via MCP |
 
 ## How Integrations Work
 
@@ -48,7 +47,4 @@ integrations/
 │   ├── setup-aliases.sh   # Setup script for macOS/Linux/WSL
 │   ├── setup-aliases.bat  # Setup script for Windows (calls .ps1)
 │   └── setup-aliases.ps1  # PowerShell setup script
-└── parallel-search/       # Web search integration
-    ├── README.md
-    └── setup.sh
 ```
