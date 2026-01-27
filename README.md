@@ -2,6 +2,7 @@
   <img src="imgs/dubu_logo.png" alt="Dubu Logo" width="400">
 </p>
 <h1 align="center">Dubu (두부)</h1>
+
 <p align="center">
   <em>A personal AI assistant framework for Claude Code</em>
 </p>
