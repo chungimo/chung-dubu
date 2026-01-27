@@ -40,7 +40,8 @@ get_dubu_home() {
     fi
 
     # Extract DUBU_HOME value (handles both quoted and unquoted paths)
-    local dubu_home=$(grep -E '^DUBU_HOME\s*=' "$config_file" | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/' | tr -d ' ')
+    # Note: Using POSIX character classes for macOS compatibility (no \s support in sed)
+    local dubu_home=$(grep -E '^DUBU_HOME[[:space:]]*=' "$config_file" | head -1 | sed 's/.*=[[:space:]]*"\([^"]*\)".*/\1/' | tr -d ' ')
 
     if [[ -z "$dubu_home" ]]; then
         print_error "DUBU_HOME not found in CLAUDE.local.md"
@@ -145,8 +146,8 @@ main() {
     echo ""
 
     # Define aliases
-    DUBU_ALIAS_CMD="cd '$REPO_ROOT' && claude -p 'assistant mode'"
-    DUBU_ALIAS_DESC="Change to Dubu repo and start Dubu in assistant mode"
+    DUBU_ALIAS_CMD="cd '$REPO_ROOT' && claude"
+    DUBU_ALIAS_DESC="Change to Dubu repo and start Claude"
 
     DUBUHOME_ALIAS_CMD="cd '$DUBU_HOME'"
     DUBUHOME_ALIAS_DESC="Change to Dubu home directory"
@@ -217,7 +218,7 @@ main() {
         echo "Or restart your terminal."
         echo ""
         echo "Available aliases:"
-        echo "  dubu     - Change to Dubu repo and start Dubu in assistant mode"
+        echo "  dubu     - Change to Dubu repo and start Claude"
         echo "  dubuhome - Change to your Dubu home directory ($DUBU_HOME)"
     else
         print_info "No changes were made."
