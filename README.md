@@ -33,8 +33,8 @@ Whether you're taking notes, planning projects, writing documentation, or just t
 3. **Run `/setup`** when prompted to configure your environment
 
 ```bash
-git clone <repo-url> dubu
-cd dubu
+git clone https://github.com/chungimo/chung-dubu
+cd chung-dubu
 claude
 # When Dubu starts, run /setup to complete onboarding
 ```
