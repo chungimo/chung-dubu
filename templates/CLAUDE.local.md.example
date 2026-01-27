@@ -1,0 +1,64 @@
+# Dubu Local Configuration
+
+This file contains your personal Dubu configuration. Copy this to `CLAUDE.local.md` in the repo root.
+
+**Note:** `CLAUDE.local.md` is gitignored and won't be committed.
+
+## Environment
+
+- **OS**: [Windows / macOS / Linux / WSL]
+- **Setup Date**: [YYYY-MM-DD]
+
+## Paths
+
+The DUBU_HOME path is where your personal data is stored (context, notes, plans, state).
+
+### Windows
+```
+DUBU_HOME = "C:\Users\YourUsername\Dubu"
+```
+
+### macOS / Linux
+```
+DUBU_HOME = "/Users/YourUsername/dubu"
+# or
+DUBU_HOME = "/home/YourUsername/dubu"
+```
+
+### WSL (Windows Subsystem for Linux)
+```
+DUBU_HOME = "/home/YourUsername/dubu"
+```
+
+**Your configuration:**
+```
+DUBU_HOME = ""
+```
+
+## Personal Preferences
+
+Add any personal instructions for Dubu here. These will be read on startup.
+
+### Communication Style
+- [Preferred level of detail: concise / detailed]
+- [Preferred tone: casual / professional]
+
+### Default Behaviors
+- [Auto-save session state: yes / no]
+- [Preferred output format for notes: markdown / plain text]
+
+### Timezone
+- [Your timezone, e.g., America/New_York, Asia/Seoul]
+
+## Custom Paths (Optional)
+
+If your repo location differs from defaults:
+```
+REPO_PATH = "/path/to/dubu/repo"
+```
+
+## Notes
+
+- Run `/setup` to have Dubu configure this file automatically
+- The setup command will detect your OS and create appropriate paths
+- You can manually edit this file at any time
