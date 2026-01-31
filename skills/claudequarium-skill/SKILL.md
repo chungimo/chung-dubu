@@ -18,7 +18,8 @@ When you run `/claudequarium`, Claude will:
    - CODING - when writing, editing, running commands
    - PLANNING - when using todos or plan mode
    - IDLE - when waiting for user input
-3. **Despawn** the character when the user ends the session or says goodbye
+3. **Wave** at the user when asked (character glows, smiles, and spins)
+4. **Despawn** the character when the user ends the session or says goodbye
 
 ---
 
@@ -34,11 +35,9 @@ When you run `/claudequarium`, Claude will:
    ```
    If this fails, tell the user to start the server first (see "Starting the Server" below).
 
-2. **Spawn an entity** for this session:
+2. **Spawn an entity** for this session (show "Claudequarium: Spawning" message):
    ```bash
-   curl -s -X POST http://localhost:4000/api/spawn \
-     -H "Content-Type: application/json" \
-     -d '{"session_id": "<SESSION_ID>"}'
+   echo "Claudequarium: Spawning" && curl -s -X POST http://localhost:4000/api/spawn -H "Content-Type: application/json" -d '{"session_id": "<SESSION_ID>"}'
    ```
    Use the current session ID or generate a unique identifier.
 
@@ -48,13 +47,13 @@ When you run `/claudequarium`, Claude will:
 
 ### During the Session
 
-Update the entity state based on what you're doing:
+Update the entity state based on what you're doing. Use echo to show a brief status, then run curl silently:
 
 ```bash
-curl -s -X POST http://localhost:4000/api/state \
-  -H "Content-Type: application/json" \
-  -d '{"entity_id": "<ENTITY_ID>", "state": "<STATE>"}'
+echo "Claudequarium: <STATE>" && curl -s -X POST http://localhost:4000/api/state -H "Content-Type: application/json" -d '{"entity_id": "<ENTITY_ID>", "state": "<STATE>"}' >/dev/null 2>&1
 ```
+
+**IMPORTANT:** Always use this format with echo prefix and `>/dev/null 2>&1` to suppress curl output. Only the "Claudequarium: STATE" message should be visible.
 
 **State mapping:**
 | Activity | State |
@@ -66,14 +65,27 @@ curl -s -X POST http://localhost:4000/api/state \
 
 You don't need to update state on every single tool call - just when the activity type changes.
 
+### When the User Asks to Wave
+
+When the user says "wave", "say hi", or asks the character to wave:
+
+```bash
+echo "Claudequarium: Waving!" && curl -s -X POST http://localhost:4000/api/wave -H "Content-Type: application/json" -d '{"entity_id": "<ENTITY_ID>"}' >/dev/null 2>&1
+```
+
+**What happens when you wave:**
+- Character looks up at the viewer with happy eyes (^ ^) for 2 seconds
+- Then spins around with a yellow glow for 3 seconds
+- Then looks up at the viewer again for 2 seconds
+- A wave emoji appears above throughout
+- Total effect lasts ~7 seconds
+
 ### When the Session Ends
 
 When the user says goodbye, ends the conversation, or explicitly asks to disconnect:
 
 ```bash
-curl -s -X POST http://localhost:4000/api/despawn \
-  -H "Content-Type: application/json" \
-  -d '{"entity_id": "<ENTITY_ID>"}'
+echo "Claudequarium: Despawning" && curl -s -X POST http://localhost:4000/api/despawn -H "Content-Type: application/json" -d '{"entity_id": "<ENTITY_ID>"}' >/dev/null 2>&1
 ```
 
 ---
@@ -101,6 +113,7 @@ npm start
 |----------|--------|------|-------------|
 | `/api/spawn` | POST | `{"session_id": "..."}` | Spawns entity, returns `{"entity_id": "..."}` |
 | `/api/state` | POST | `{"entity_id": "...", "state": "..."}` | Updates entity state |
+| `/api/wave` | POST | `{"entity_id": "..."}` | Makes entity wave (look up, spin, look up - 7s) |
 | `/api/despawn` | POST | `{"entity_id": "..."}` | Removes entity |
 
 **Valid states:** `THINKING`, `CODING`, `PLANNING`, `IDLE`
