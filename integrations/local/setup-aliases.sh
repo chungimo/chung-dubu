@@ -145,8 +145,8 @@ main() {
     echo ""
 
     # Define aliases
-    DUBU_ALIAS_CMD="cd '$REPO_ROOT' && claude -p 'assistant mode'"
-    DUBU_ALIAS_DESC="Change to Dubu repo and start Dubu in assistant mode"
+    DUBU_ALIAS_CMD="cd '$REPO_ROOT' && claude 'Initialize'"
+    DUBU_ALIAS_DESC="Change to Dubu repo and start Dubu"
 
     DUBUHOME_ALIAS_CMD="cd '$DUBU_HOME'"
     DUBUHOME_ALIAS_DESC="Change to Dubu home directory"
@@ -217,7 +217,7 @@ main() {
         echo "Or restart your terminal."
         echo ""
         echo "Available aliases:"
-        echo "  dubu     - Change to Dubu repo and start Dubu in assistant mode"
+        echo "  dubu     - Change to Dubu repo and start Dubu"
         echo "  dubuhome - Change to your Dubu home directory ($DUBU_HOME)"
     else
         print_info "No changes were made."

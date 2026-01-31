@@ -56,10 +56,10 @@ if ($null -eq $ProfileContent) {
 # Function definitions to add
 $DubuFunction = @"
 
-# Dubu alias: dubu - Change to Dubu repo and start Dubu in assistant mode
+# Dubu alias: dubu - Change to Dubu repo and start Dubu
 function dubu {
     Set-Location '$RepoRoot'
-    claude -p 'assistant mode'
+    claude 'Initialize'
 }
 "@
 
@@ -156,7 +156,7 @@ if ($ChangesMade) {
     Write-Host "Or restart your PowerShell terminal."
     Write-Host ""
     Write-Host "Available commands:"
-    Write-Host "  dubu     - Change to Dubu repo and start Dubu in assistant mode"
+    Write-Host "  dubu     - Change to Dubu repo and start Dubu"
     Write-Host "  dubuhome - Change to your Dubu home directory ($DubuHome)"
 } else {
     Write-Info "No changes were made to shell profile."
