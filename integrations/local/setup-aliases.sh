@@ -40,7 +40,8 @@ get_dubu_home() {
     fi
 
     # Extract DUBU_HOME value (handles both quoted and unquoted paths)
-    local dubu_home=$(grep -E '^DUBU_HOME\s*=' "$config_file" | head -1 | sed 's/.*=\s*"\?\([^"]*\)"\?.*/\1/' | tr -d ' ')
+    # Note: Using POSIX character classes for macOS compatibility (no \s support in sed)
+    local dubu_home=$(grep -E '^DUBU_HOME[[:space:]]*=' "$config_file" | head -1 | sed 's/.*=[[:space:]]*"\([^"]*\)".*/\1/' | tr -d ' ')
 
     if [[ -z "$dubu_home" ]]; then
         print_error "DUBU_HOME not found in CLAUDE.local.md"
