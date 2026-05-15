@@ -28,15 +28,21 @@ export class SessionStore {
       if (value?.sessionId) {
         this.entries.set(key, {
           sessionId: value.sessionId,
+          provider: value.provider ?? null,
           updatedAt: value.updatedAt ?? Date.now(),
         });
       }
     }
   }
 
-  get(threadKey) {
+  get(threadKey, provider = null) {
     const entry = this.entries.get(threadKey);
     if (!entry) return null;
+    if (provider && entry.provider !== provider) {
+      this.entries.delete(threadKey);
+      this.scheduleWrite();
+      return null;
+    }
     if (this.idleMs > 0 && Date.now() - entry.updatedAt > this.idleMs) {
       this.entries.delete(threadKey);
       this.scheduleWrite();
@@ -45,8 +51,8 @@ export class SessionStore {
     return entry.sessionId;
   }
 
-  set(threadKey, sessionId) {
-    this.entries.set(threadKey, { sessionId, updatedAt: Date.now() });
+  set(threadKey, sessionId, provider = null) {
+    this.entries.set(threadKey, { sessionId, provider, updatedAt: Date.now() });
     this.scheduleWrite();
   }
 

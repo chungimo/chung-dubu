@@ -48,6 +48,10 @@ export async function loadConfig(configPathArg) {
 
   requireString(parsed, "discord.token");
   requireString(parsed, "discord.applicationId");
+  const provider = parsed.provider ?? "codex";
+  if (!["claude", "codex"].includes(provider)) {
+    fail(`"provider" must be "claude" or "codex"`);
+  }
 
   const allowedGuilds = parsed.discord.allowedGuilds ?? {};
   if (typeof allowedGuilds !== "object" || Array.isArray(allowedGuilds)) {
@@ -64,6 +68,7 @@ export async function loadConfig(configPathArg) {
   return {
     path,
     projectRoot: PROJECT_ROOT,
+    provider,
     discord: {
       token: parsed.discord.token,
       applicationId: parsed.discord.applicationId,
@@ -89,6 +94,18 @@ export async function loadConfig(configPathArg) {
       cwd: parsed.claude?.cwd ? absolutize(parsed.claude.cwd) : PROJECT_ROOT,
       extraArgs: Array.isArray(parsed.claude?.extraArgs) ? parsed.claude.extraArgs : [],
       timeoutMs: Number.isFinite(parsed.claude?.timeoutMs) ? parsed.claude.timeoutMs : 600_000,
+    },
+    codex: {
+      binary: parsed.codex?.binary ?? "codex",
+      model: parsed.codex?.model ?? null,
+      profile: parsed.codex?.profile ?? null,
+      sandbox: parsed.codex?.sandbox ?? "read-only",
+      cwd: parsed.codex?.cwd ? absolutize(parsed.codex.cwd) : PROJECT_ROOT,
+      config: Array.isArray(parsed.codex?.config) ? parsed.codex.config : [],
+      extraArgs: Array.isArray(parsed.codex?.extraArgs) ? parsed.codex.extraArgs : [],
+      skipGitRepoCheck: Boolean(parsed.codex?.skipGitRepoCheck),
+      dangerouslyBypassApprovalsAndSandbox: Boolean(parsed.codex?.dangerouslyBypassApprovalsAndSandbox),
+      timeoutMs: Number.isFinite(parsed.codex?.timeoutMs) ? parsed.codex.timeoutMs : 600_000,
     },
     sessions: {
       file: parsed.sessions?.file

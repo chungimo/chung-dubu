@@ -2,7 +2,7 @@
   "name": "@dubu/discord-bot",
   "version": "0.1.0",
   "private": true,
-  "description": "Minimal Discord bridge that pipes messages through the Claude Code CLI.",
+  "description": "Minimal Discord bridge that pipes messages through a configured agent CLI provider.",
   "type": "module",
   "engines": {
     "node": ">=20"

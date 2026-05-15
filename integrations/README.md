@@ -7,7 +7,7 @@ Optional tool integrations to extend Dubu's capabilities.
 | Integration | Description |
 |-------------|-------------|
 | [local](local/) | Shell aliases for quick navigation (`dubu`, `dubuhome`) |
-| [discord-bot](discord-bot/) | Discord channel bridge that pipes messages through the `claude` CLI |
+| [discord-bot](discord-bot/) | Discord channel bridge that pipes messages through a configured agent CLI provider |
 
 ## How Integrations Work
 
@@ -78,7 +78,7 @@ integrations/
 │   ├── setup-aliases.sh
 │   ├── setup-aliases.bat
 │   └── setup-aliases.ps1
-└── discord-bot/                     # Discord -> claude CLI bridge
+└── discord-bot/                     # Discord -> agent CLI bridge
     ├── README.md
     ├── package.json
     ├── config.example.json

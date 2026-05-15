@@ -4,7 +4,7 @@
 <h1 align="center">Dubu (두부)</h1>
 
 <p align="center">
-  <em>A personal AI assistant framework for Claude Code</em>
+  <em>A personal AI assistant framework and evolving LLM router</em>
 </p>
 
 ---
@@ -13,7 +13,7 @@
 
 **Dubu** means "tofu" in Korean — and like tofu, this framework is simple, versatile, and adaptable. It takes on the flavor of whatever you bring to it.
 
-At its core, Dubu is a configuration layer for Claude Code that gives your AI assistant memory, personality, and structure. Instead of starting fresh every session, Dubu remembers your context, preferences, and previous conversations. Instead of a generic assistant, you get specialized agents tailored to specific tasks.
+At its core, Dubu is a configuration layer for Claude Code that gives your AI assistant memory, personality, and structure. It is also evolving into a provider-agnostic terminal agent layer that can route work through backends like Claude or Codex while keeping memory, skills, and tools centralized. Instead of starting fresh every session, Dubu remembers your context, preferences, and previous conversations. Instead of a generic assistant, you get specialized agents tailored to specific tasks.
 
 Whether you're taking notes, planning projects, writing documentation, or just thinking through problems — Dubu adapts to how you work.
 
@@ -25,6 +25,7 @@ Whether you're taking notes, planning projects, writing documentation, or just t
 - **Specialized agents** — Switch between focused AI roles for different tasks
 - **Organized outputs** — Notes, plans, and documents saved to structured folders
 - **Session continuity** — Pick up where you left off
+- **Provider-aware integrations** — Some integrations can route through different agent CLIs, starting with the Discord bot's Claude/Codex support
 
 ## Quick Start
 
@@ -126,6 +127,7 @@ dubu/
 │   └── dubu-ai-example/      # Template for user's Dubu home
 ├── .claude/
 │   └── commands/             # Slash command definitions
+├── docs/                     # Planning notes and future direction
 └── integrations/             # Optional tool integrations
 ```
 

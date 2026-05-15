@@ -1,6 +1,6 @@
 import { isChannelAllowed } from "./config.mjs";
 import { threadKey } from "./sessions.mjs";
-import { runClaude, ClaudeError } from "./claude.mjs";
+import { runProvider, ProviderError } from "./providers.mjs";
 import { chunkForDiscord } from "./chunk.mjs";
 import { MessageDebouncer, combinePrompts } from "./debouncer.mjs";
 import { addReaction, removeOwnReaction, ACK_THINKING, ACK_ERROR } from "./reactions.mjs";
@@ -34,14 +34,14 @@ export function createMessageHandler({ config, sessions, usageLogger, log, getBo
     await sendTyping(client, channelId);
 
     try {
-      const resumeId = sessions.get(sessionKey);
-      log.info(`claude: ${resumeId ? "resume" : "new"} ${sessionKey} (${entries.length} msg, ${prompt.length} chars)`);
-      const { sessionId, text, raw } = await runClaude({
+      const resumeId = sessions.get(sessionKey, config.provider);
+      log.info(`${config.provider}: ${resumeId ? "resume" : "new"} ${sessionKey} (${entries.length} msg, ${prompt.length} chars)`);
+      const { sessionId, text, raw } = await runProvider({
+        config,
         prompt,
         resumeSessionId: resumeId,
-        claudeConfig: config.claude,
       });
-      sessions.set(sessionKey, sessionId);
+      sessions.set(sessionKey, sessionId, config.provider);
 
       try {
         const u = await usageLogger.record({
@@ -71,9 +71,9 @@ export function createMessageHandler({ config, sessions, usageLogger, log, getBo
         await removeOwnReaction({ ...ackTarget, emoji: ACK_THINKING });
         await addReaction({ ...ackTarget, emoji: ACK_ERROR });
       }
-      if (err instanceof ClaudeError) {
-        log.error(`claude error: ${err.message}${err.stderr ? `\n${err.stderr.slice(0, 400)}` : ""}`);
-        await safeReply(message, `_claude error: ${err.message}_`);
+      if (err instanceof ProviderError) {
+        log.error(`${err.provider} error: ${err.message}${err.stderr ? `\n${err.stderr.slice(0, 400)}` : ""}`);
+        await safeReply(message, `_${err.provider} error: ${err.message}_`);
       } else {
         log.error(`handler error: ${err.stack ?? err.message}`);
         await safeReply(message, `_handler error: ${err.message}_`);

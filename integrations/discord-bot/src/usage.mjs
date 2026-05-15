@@ -9,6 +9,7 @@ export function extractUsage(raw) {
   const u = raw?.usage ?? {};
   const modelName = raw?.modelUsage ? Object.keys(raw.modelUsage)[0] ?? null : null;
   return {
+    provider: raw?.provider ?? "claude",
     costUsd: Number(raw?.total_cost_usd ?? 0) || 0,
     inputTokens: Number(u.input_tokens ?? 0) || 0,
     outputTokens: Number(u.output_tokens ?? 0) || 0,
@@ -99,6 +100,6 @@ export class UsageLogger {
       const pct = (this.monthTotalUsd / this.monthlyBudgetUsd) * 100;
       mtd += ` ${pct.toFixed(1)}% of $${this.monthlyBudgetUsd}`;
     }
-    return `usage: ${cost} ${dur} ${toks} | ${mtd}`;
+    return `usage: ${usage.provider} ${cost} ${dur} ${toks} | ${mtd}`;
   }
 }

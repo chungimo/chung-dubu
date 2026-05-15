@@ -17,12 +17,25 @@
       "presence": false
     }
   },
+  "provider": "codex",
   "claude": {
     "binary": "claude",
     "permissionMode": "bypassPermissions",
     "model": null,
     "cwd": null,
     "extraArgs": [],
+    "timeoutMs": 600000
+  },
+  "codex": {
+    "binary": "codex",
+    "model": null,
+    "profile": null,
+    "sandbox": "read-only",
+    "cwd": null,
+    "config": [],
+    "extraArgs": [],
+    "skipGitRepoCheck": false,
+    "dangerouslyBypassApprovalsAndSandbox": false,
     "timeoutMs": 600000
   },
   "sessions": {

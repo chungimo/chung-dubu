@@ -1,12 +1,12 @@
 # discord-bot
 
-Minimal Discord bridge that pipes channel messages through the `claude` CLI and posts replies back. A stripped-down sibling of the openclaw Discord channel plugin: no slash commands, components, voice, exec approvals, or skill commands. Just messages in, Claude out.
+Minimal Discord bridge that pipes channel messages through a configured agent CLI provider and posts replies back. A stripped-down sibling of the openclaw Discord channel plugin: no slash commands, components, voice, exec approvals, or skill commands. Just messages in, agent out.
 
 ## What it does
 
 - Connects to Discord as a bot via [@buape/carbon](https://carbon.buape.com) (WebSocket gateway + REST).
 - Listens for messages in configured guild/channel allowlists (and optional DMs).
-- For each conversation (per channel or per thread, see [Session model](#session-model)) it spawns `claude -p ... --output-format json` and resumes the same `session_id` on follow-ups, so Claude has memory of prior turns.
+- For each conversation (per channel or per thread, see [Session model](#session-model)) it spawns the configured provider CLI and resumes the same provider session on follow-ups.
 - Replies in the same channel/thread, chunked at the 2000-char Discord limit. Code fences carry across splits.
 - Optional reaction acks, message debouncing, and presence caching.
 
@@ -18,10 +18,12 @@ src/
   config.mjs      JSON config loader + validator
   paths.mjs       resolves DUBU_HOME + config/state/logs paths for this integration
   sessions.mjs    on-disk thread/channel -> session_id store with idle expiry
+  providers.mjs   provider dispatcher for supported agent CLIs
   claude.mjs      spawns `claude` CLI as a subprocess
+  codex.mjs       spawns `codex exec` as a subprocess
   chunk.mjs       splits long replies into <=2000-char chunks at safe boundaries
   bot.mjs         Carbon Client + gateway plugin + listener subclasses
-  handler.mjs     allowlist + debouncer + ack + claude call + chunked reply
+  handler.mjs     allowlist + debouncer + ack + provider call + chunked reply
   debouncer.mjs   per-author debouncer with per-key serialization
   reactions.mjs   add/remove own reactions via REST
   presence.mjs    in-memory PresenceUpdate cache (LRU)
@@ -38,7 +40,8 @@ Runtime config + state live under `{DUBU_HOME}/{config,state,logs}/discord-bot/`
 ## Prerequisites
 
 - Node 20+
-- `claude` CLI on `PATH` (or set `claude.binary` in config to an absolute path), already authenticated (`claude auth login` or via `ANTHROPIC_API_KEY`).
+- `codex` CLI on `PATH` for the default provider, already authenticated (`codex login`).
+- Optional: `claude` CLI on `PATH` if you set `"provider": "claude"` (`claude auth login` or via `ANTHROPIC_API_KEY`).
 - A Discord application + bot you control. From the [Developer Portal](https://discord.com/developers/applications):
   1. Create an Application, then a Bot under it.
   2. Copy the **Application ID** (General Information) and the **Bot Token** (Bot tab, Reset Token).
@@ -97,6 +100,7 @@ See `../README.md` (`integrations/README.md`) for the shared filesystem conventi
       "presence": false             // enable to track user presence (requires privileged intent toggle in Dev Portal)
     }
   },
+  "provider": "codex",              // "codex" or "claude"
   "claude": {
     "binary": "claude",
     "permissionMode": "bypassPermissions",  // sent to `claude --permission-mode`
@@ -104,6 +108,18 @@ See `../README.md` (`integrations/README.md`) for the shared filesystem conventi
     "cwd": null,                    // working dir for claude subprocess; null = project root
     "extraArgs": [],                // additional flags passed before the prompt
     "timeoutMs": 600000             // SIGTERM if claude runs longer than this
+  },
+  "codex": {
+    "binary": "codex",
+    "model": null,                  // null = CLI default
+    "profile": null,                // optional Codex config profile
+    "sandbox": "read-only",         // new sessions only: read-only | workspace-write | danger-full-access
+    "cwd": null,                    // working dir for codex subprocess; null = project root
+    "config": [],                   // repeated `--config key=value` overrides
+    "extraArgs": [],                // additional flags passed before the prompt
+    "skipGitRepoCheck": false,
+    "dangerouslyBypassApprovalsAndSandbox": false,
+    "timeoutMs": 600000             // SIGTERM if codex runs longer than this
   },
   "sessions": {
     // "file" defaults to {DUBU_HOME}/state/discord-bot/sessions.json.
@@ -128,11 +144,12 @@ See `../README.md` (`integrations/README.md`) for the shared filesystem conventi
 
 ## Session model
 
-The bot binds one Claude conversation to one Discord channel ID.
+The bot binds one provider conversation to one Discord channel ID.
 
 - A message in a regular channel resumes (or creates) the session for that channel.
 - Discord threads have their own channel IDs, so a thread automatically gets its own isolated session.
 - Sessions persist to `sessions.json`. After `sessions.idleHours` of inactivity, the next message in that channel starts a fresh session.
+- Sessions are provider-aware. If you switch providers, the next message in a channel starts a fresh session for the new provider because Claude session IDs and Codex thread IDs are not interchangeable.
 
 Storage shape:
 
@@ -140,7 +157,7 @@ Storage shape:
 {
   "version": 1,
   "entries": {
-    "<guildId>:<channelId>": { "sessionId": "<uuid>", "updatedAt": 1715000000000 }
+    "<guildId>:<channelId>": { "sessionId": "<uuid>", "provider": "codex", "updatedAt": 1715000000000 }
   }
 }
 ```
@@ -149,13 +166,13 @@ To wipe a session, delete its entry from `sessions.json` (or delete the whole fi
 
 ## Usage tracking
 
-Every `claude -p` invocation returns a JSON payload that includes `total_cost_usd` and token counts. The bot appends one record per run to `{DUBU_HOME}/logs/discord-bot/usage.jsonl` and logs a per-message summary line:
+Every provider invocation appends one record per run to `{DUBU_HOME}/logs/discord-bot/usage.jsonl` and logs a per-message summary line:
 
 ```
-usage: $0.0412 3.2s in=18 out=240 cache_r=11023 cache_w=4671 | mtd=$2.14 (61 msg) 2.1% of $100
+usage: codex $0.0000 3.2s in=18 out=240 cache_r=11023 cache_w=0 | mtd=$2.14 (61 msg) 2.1% of $100
 ```
 
-`total_cost_usd` is the API-equivalent cost. Under a Claude subscription you are not billed this per message today, but as of the June 15 2026 billing change, `claude -p` / Agent SDK usage draws from a separate fixed monthly Agent SDK credit ($100/mo on Max 5x) rather than the interactive subscription limits. Tracking `total_cost_usd` is how you watch consumption against that credit.
+Claude reports `total_cost_usd`; Codex JSONL currently reports token usage but not a per-run dollar cost through this integration, so Codex records default to `$0.0000` unless cost data is added later.
 
 Run a report any time:
 
@@ -169,18 +186,18 @@ It prints this-month / last-7-days / all-time totals, average cost per message, 
 
 When `discord.ack` is `"on"`:
 
-- 👀 added on the most recent message in the batch when Claude starts running.
+- 👀 added on the most recent message in the batch when the provider starts running.
 - 👀 removed once the reply posts.
-- ❌ added if the run errors (Claude exit code, timeout, or handler exception).
+- ❌ added if the run errors (provider exit code, timeout, or handler exception).
 
 ## Debouncer
 
-Coalesces rapid messages from the same author in the same channel into a single Claude invocation. Useful when a user sends a thought in 2-3 bursts.
+Coalesces rapid messages from the same author in the same channel into a single provider invocation. Useful when a user sends a thought in 2-3 bursts.
 
 - Key: `guildId:channelId:authorId` (DMs use `dm:channelId:authorId`).
 - Window resets on each new message in the key.
 - Messages with attachments or stickers, or any single message longer than `maxChars`, skip the debouncer and fire immediately.
-- A per-key promise queue serializes flushes, so a second burst that arrives while Claude is still processing the first batch queues neatly instead of racing.
+- A per-key promise queue serializes flushes, so a second burst that arrives while the provider is still processing the first batch queues neatly instead of racing.
 - The combined prompt is `entries.map(e => e.content).join("\n\n")`. The reply targets the last message in the batch.
 
 Set `discord.debounce.windowMs` to `0` to disable debouncing entirely.
@@ -225,7 +242,9 @@ Each is feasible to add later. The most-likely next adds:
 - **`401 Unauthorized` on startup**: bot token is wrong or was rotated. Reset it in the Developer Portal and update `config.json`.
 - **`Used disallowed intents`**: you enabled `intents.presence: true` but didn't toggle the Presence Intent in the Developer Portal (or `Message Content Intent` is off).
 - **Bot connects but never replies**: check the channel is in `allowedGuilds[guildId].channels`, and that `requireMention` matches how you're addressing it.
-- **`claude: command not found`**: set `claude.binary` to an absolute path (e.g. `/Users/you/.nvm/versions/node/vXX/bin/claude`).
+- **`codex: command not found`**: set `codex.binary` to an absolute path.
+- **`codex exited 1`**: check stderr in the handler log; usually auth (`codex login`), session access, or a model/flag the CLI doesn't recognize.
+- **`claude: command not found`**: if using `"provider": "claude"`, set `claude.binary` to an absolute path.
 - **`claude exited 1`**: check stderr in the handler log; usually auth (`claude auth login`) or a model/flag the CLI doesn't recognize.
 - **Reply is silently truncated**: shouldn't happen with the chunker, but if a single line exceeds 2000 chars with no break opportunity it falls back to a hard split at 2000. Long unbroken strings (URLs, base64) are the usual culprit.
 
