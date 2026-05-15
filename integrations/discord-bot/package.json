@@ -1,0 +1,18 @@
+{
+  "name": "@dubu/discord-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Discord bridge that pipes messages through the Claude Code CLI.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "setup": "node scripts/setup.mjs",
+    "usage": "node scripts/usage.mjs"
+  },
+  "dependencies": {
+    "@buape/carbon": "0.15.0"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "discord": {
+    "token": "PASTE_BOT_TOKEN_HERE",
+    "applicationId": "PASTE_APP_ID_HERE",
+    "allowedGuilds": {
+      "GUILD_ID_HERE": {
+        "channels": ["CHANNEL_ID_HERE"]
+      }
+    },
+    "requireMention": false,
+    "ack": "on",
+    "debounce": {
+      "windowMs": 1500,
+      "maxChars": 400
+    },
+    "intents": {
+      "presence": false
+    }
+  },
+  "claude": {
+    "binary": "claude",
+    "permissionMode": "bypassPermissions",
+    "model": null,
+    "cwd": null,
+    "extraArgs": [],
+    "timeoutMs": 600000
+  },
+  "sessions": {
+    "idleHours": 24
+  },
+  "usage": {
+    "monthlyBudgetUsd": 100
+  },
+  "log": {
+    "level": "info"
+  }
+}
